@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         Murder Sim Import Generator
-// @namespace    https://github.com/murdersimimport/Murder-Sim-Import-Generator/
+// @namespace    https://github.com/murdersimimport/
 // @version      1.0
 // @description  Usable extractor that generates an import statement for Murder Sim
 // @author       anonymous
+// @downloadurl https://github.com/murdersimimport/Murder-Sim-Import-Generator/blob/master/murdersimimport.user.js
+// @updateurl   https://github.com/murdersimimport/Murder-Sim-Import-Generator/blob/master/murdersimimport.user.js
 // @include     /^(https?://)?boards\.4chan(nel)?\.org/.*/(res|thread)/.*$/
 // @include     http://orteil.dashnet.org/murdergames/
 // @grant        none
