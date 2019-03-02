@@ -41,7 +41,7 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
       * An array is constructed that allows the script to check against the defined traits in
       * orteil's Murder Sim, so that multi-line submissions can be read and filled automatically.
       * TO-DO:
-      * - Add error checking that throws if: traits are mispelled, teams are mispelled.
+      * - Add error checking that throws if: traits are mispelled.
       * - Define a behavior for the teams method that redraws the options for each dropdown menu.
       * - Possibly add an option to use full-sized images instead of postThumb thumbnails.
       * - Indicator for possible missed posts[?], e.g., in sample where submissions x and y have invalid traits[1,2] or invalid trait[1||2]?
@@ -90,7 +90,7 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
 
     // Array listing the traits inherent in Murder Sim in order to check for traits on third lines.
     // Will also be used for error-checking at generation.
-    var originTraits = ["leader", "peaceful", "sociopath", "kind", "unstable", "bulky", "meek", "naive", "devious", "seductive", "suicidal", "cute", "annoying", "scrappy", "survivalist", "rich", "inventor", "goth", "lunatic"];
+    const originTraits = new Set(["leader", "peaceful", "sociopath", "kind", "unstable", "bulky", "meek", "naive", "devious", "seductive", "suicidal", "cute", "annoying", "scrappy", "survivalist", "rich", "inventor", "goth", "lunatic", "none"]);
 
     var active = 0
 
@@ -107,6 +107,7 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
         active = 0;
         var teamSet = document.getElementById("teamsList").value;
         teamList = teamSet.split(", ");
+
     }
 
     teamsList.type = "text";
@@ -138,10 +139,8 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
             var drawn = posts[i].getElementsByClassName("msForm");
             if (drawn[0] == undefined){
                 text = posts[i].getElementsByClassName("postMessage")[0].innerText;
-                text = text.replace(/(>>[0-9]+)(\s?\(You\))?(\s?\(OP\))?/g, '');
-                text = text.replace(/[^\w\s]/g, ' ');
+                text = text.replace(/(?:[^A-Z\s]*)/ig, '');
                 text = text.replace(/ {1,}/g, ' ');
-                text = text.replace(/ n /g, '');
                 text = text.split(/\n/g);
                 text = text.filter(emptyClean);
                 for (var c = 0; c < text.length; c++){
@@ -181,8 +180,10 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
                     traitsField.value = text[1];
                     traitsField.value = traitsField.value.toLowerCase();
                 }
-                if (traitsField.value.includes('and ')){
-                    traitsField.value = traitsField.value.replace('and ', '');
+                if (traitsField.value.includes(' and ')){
+                    traitsField.value = traitsField.value.replace('and ', ' ');
+                } else if (traitsField.value.includes(' n ')) {
+                    traitsField.value = traitsField.value.replace(' n ', ' ');
                 }
                 var nameField = document.createElement("INPUT");
                 nameField.type = "text";
@@ -267,7 +268,9 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
         }
         var teamEnd = '],"chars":[';
         var nameList = [];
+        var errorList = [];
         var entries = [];
+        var exceptions = 0;
         for (var i = 0; i < forms.length; i++){
             var name = forms[i].getElementsByClassName("nameField")[0];
             var traits = forms[i].getElementsByClassName("traitsField")[0].value;
@@ -278,6 +281,12 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
                 nameList.push(name.value);
                 var nameGen = name.value;
                 var traitsGen = traits.split(' ');
+                if (!(originTraits.has(traitsGen[0]) || originTraits.has(traitsGen[1]))){
+                    traitsGen[0] = "none";
+                    traitsGen[1] = "none";
+                    errorList.push(nameGen);
+                    exceptions++;
+                }
                 for (var x = 0; x < gender.length; x++) {
                     if (gender[x].type == 'radio' && gender[x].checked){
                         var genderGen = gender[x].value;
@@ -288,6 +297,7 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
                         var teamGen = team[z].value;
                     }
                 }
+
                 var image = forms[i].parentNode;
                 var imgHref = image.getElementsByClassName("fileThumb");
                 if (imgHref[0]){
@@ -325,6 +335,10 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
             importState.value = fullInput;
             document.body.appendChild(importState);
             document.body.appendChild(importGrab);
+        }
+        if (exceptions > 0){
+            var errors = errorList.join('\n');
+            alert('ERRORS FOUND: ' + exceptions + '\nPlease check: ' + errors);
         }
     }
 
