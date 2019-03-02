@@ -139,7 +139,8 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
             var drawn = posts[i].getElementsByClassName("msForm");
             if (drawn[0] == undefined){
                 text = posts[i].getElementsByClassName("postMessage")[0].innerText;
-                text = text.replace(/(?:[^A-Z\s]*)/ig, '');
+                text = text.replace(/\(You\)|\(OP\)|\(Cross-thread\)/g, '');
+                text = text.replace(/(?:[^\A-Z\s]*)/ig, '');
                 text = text.replace(/ {1,}/g, ' ');
                 text = text.split(/\n/g);
                 text = text.filter(emptyClean);
