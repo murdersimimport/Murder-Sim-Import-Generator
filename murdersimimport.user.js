@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Murder Sim Import Generator
 // @namespace    https://github.com/murdersimimport/
-// @version      1.0
+// @version      1.1.3
 // @description  Usable extractor that generates an import statement for Murder Sim
 // @author       anonymous
 // @downloadurl https://github.com/murdersimimport/Murder-Sim-Import-Generator/blob/master/murdersimimport.user.js
@@ -41,10 +41,8 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
       * An array is constructed that allows the script to check against the defined traits in
       * orteil's Murder Sim, so that multi-line submissions can be read and filled automatically.
       * TO-DO:
-      * - Add error checking that throws if: traits are mispelled.
       * - Define a behavior for the teams method that redraws the options for each dropdown menu.
       * - Possibly add an option to use full-sized images instead of postThumb thumbnails.
-      * - Indicator for possible missed posts[?], e.g., in sample where submissions x and y have invalid traits[1,2] or invalid trait[1||2]?
      */
 
     var teams = document.createElement("INPUT");
@@ -142,7 +140,7 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
                 text = text.replace(/\s*(\(You\)|\(OP\)|\(Cross-thread\))/g, '');
                 text = text.replace(/(?:[^\A-Z\s]*)/ig, '');
                 text = text.replace(/ {1,}/g, ' ');
-                text = text.split(/\n/g);
+                text = text.split('\n');
                 text = text.filter(emptyClean);
                 for (var c = 0; c < text.length; c++){
                     text[c] = text[c].trim();
@@ -170,13 +168,9 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
                 var traitsField = document.createElement("INPUT");
                 traitsField.type = "text";
                 traitsField.className = "traitsField";
-                traitsField.value = text[1];
-                if ((traitsField.value.length > 0 || traitsField.value.length < 13) && text[2] != undefined) {
-                    for (var b = 0; b < originTraits.length; b++){
-                        if (text[2].toLowerCase() == originTraits[b]){
-                            traitsField.value = text[1] + ' ' + text[2];
-                        }
-                    }
+                if (text[2] && originTraits.has(text[2].toLowerCase())) {
+                    traitsField.value = text[1] + ' ' + text[2];
+                    traitsField.value = traitsField.value.toLowerCase();
                 } else {
                     traitsField.value = text[1];
                     traitsField.value = traitsField.value.toLowerCase();
@@ -194,11 +188,9 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
                 selected.type = "checkbox";
                 selected.className = "check";
                 if (traitsField.value != "undefined" && nameField.value != ""){
-                    for (var t = 0; t < originTraits.length; t++){
-                        var traitSplit = traitsField.value.split(' ');
-                        if (traitSplit[0].toLowerCase() == originTraits[t]){
-                            selected.checked = true;
-                        }
+                    var traitSplit = traitsField.value.split(' ');
+                    if (originTraits.has(traitSplit[1])){
+                        selected.checked = true;
                     }
                 }
                 var teamChooser = document.createElement("SELECT");
@@ -222,7 +214,6 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
                     teamChooser.appendChild(member);
                 }
 
-                traitsField.value = traitsField.value.toLowerCase();
                 posts[i].prepend(form);
             }
         }
@@ -282,7 +273,7 @@ if(window.location.hostname == "boards.4chan.org" || window.location.hostname ==
                 nameList.push(name.value);
                 var nameGen = name.value;
                 var traitsGen = traits.split(' ');
-                if (!(originTraits.has(traitsGen[0]) || originTraits.has(traitsGen[1]))){
+                if (!originTraits.has(traitsGen[0])){
                     traitsGen[0] = "none";
                     traitsGen[1] = "none";
                     errorList.push(nameGen);
